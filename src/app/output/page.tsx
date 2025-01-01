@@ -20,7 +20,7 @@ export default function OutputPage() {
 
   useEffect(() => {
     calculateResults()
-  }, [])
+  }, [calculateResults])
 
   const formatCurrency = (num: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -49,8 +49,8 @@ export default function OutputPage() {
           value={state.results.moic.toFixed(2) + 'x'}
         />
         <ResultCard
-          title="Payback Period"
-          value={state.results.paybackPeriod.toFixed(1) + ' years'}
+          title="Enterprise Value"
+          value={formatCurrency(state.results.exitValue.enterpriseValue)}
         />
       </div>
 
