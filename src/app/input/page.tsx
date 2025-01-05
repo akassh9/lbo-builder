@@ -14,15 +14,14 @@ export default function InputPage() {
     updateInputs({ [name]: parseFloat(value) })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCalculate = () => {
     router.push('/output')
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Input Parameters</h1>
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl">
         <CollapsibleSection title="Target Company Financials">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField
@@ -101,8 +100,13 @@ export default function InputPage() {
           </div>
         </CollapsibleSection>
 
-        <Button type="submit" className="w-full">Calculate Results</Button>
-      </form>
+        <Button
+          onClick={handleCalculate}
+          className="w-full"
+        >
+          Calculate Results
+        </Button>
+      </div>
     </div>
   )
 }
