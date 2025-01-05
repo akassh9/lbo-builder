@@ -73,6 +73,7 @@ export default function InputPage() {
               min="0"
               max="100"
               step="1"
+              showValue
             />
           </div>
         </CollapsibleSection>
@@ -119,7 +120,8 @@ function InputField({
   type = "number",
   min,
   max,
-  step
+  step,
+  showValue
 }: { 
   label: string
   name: string
@@ -129,22 +131,26 @@ function InputField({
   min?: string
   max?: string
   step?: string
+  showValue?: boolean
 }) {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">
         {label}
       </label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="w-full rounded-md border border-gray-300 px-3 py-2"
-        step={step || "any"}
-        min={min}
-        max={max}
-      />
+      <div className="flex items-center gap-4">
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          className="w-full rounded-md border border-gray-300 px-3 py-2"
+          step={step || "any"}
+          min={min}
+          max={max}
+        />
+        {showValue && <span className="text-sm font-medium">{value}%</span>}
+      </div>
     </div>
   )
 } 
