@@ -34,12 +34,18 @@ export function calculateProjections({
   marginImprovement: number;
   exitYear: number;
 }): Projection[] {
-  // Implementation here
-  return Array.from({ length: exitYear }, (_, i) => ({
-    year: i + 1,
-    revenue: revenue * Math.pow(1 + growthRate / 100, i),
-    ebitda: ebitda * Math.pow(1 + marginImprovement / 100, i)
-  }));
+  const initialMargin = ebitda / revenue;
+  
+  return Array.from({ length: exitYear }, (_, i) => {
+    const projectedRevenue = revenue * Math.pow(1 + growthRate / 100, i);
+    const projectedMargin = initialMargin + (marginImprovement / 100 * i);
+    
+    return {
+      year: i + 1,
+      revenue: projectedRevenue,
+      ebitda: projectedRevenue * projectedMargin
+    };
+  });
 }
 
 export function calculateCashFlows(
@@ -50,11 +56,18 @@ export function calculateCashFlows(
     currentDebt: number;
   }
 ): CashFlow[] {
-  return projections.map((p, i) => ({
-    year: i + 1,
-    // Include debt service in FCF calculation
-    fcf: p.ebitda * (1 - capex / 100) - (currentDebt * (interestRate / 100))
-  }));
+  const taxRate = 0.21; // Standard corporate tax rate
+  return projections.map((p, i) => {
+    const interestExpense = currentDebt * (interestRate / 100);
+    const taxableIncome = p.ebitda - interestExpense;
+    const taxes = Math.max(0, taxableIncome * taxRate);
+    const workingCapital = p.revenue * 0.1; // Assume 10% of revenue for working capital
+    
+    return {
+      year: i + 1,
+      fcf: p.ebitda * (1 - capex / 100) - taxes - workingCapital - interestExpense
+    };
+  });
 }
 
 export function calculateExitValue(
@@ -62,12 +75,14 @@ export function calculateExitValue(
   exitMultiple: number, 
   currentDebt: number
 ): ExitValue {
-  // Implementation here
   const enterpriseValue = finalEbitda * exitMultiple;
+  const netWorkingCapital = finalEbitda * 0.1; // Assume 10% of EBITDA
+  const grossValue = enterpriseValue + netWorkingCapital;
+  
   return {
-    enterpriseValue,
+    enterpriseValue: grossValue,
     debtRepayment: currentDebt,
-    equityValue: enterpriseValue - currentDebt
+    equityValue: grossValue - currentDebt
   };
 }
 
@@ -76,12 +91,20 @@ export function calculateDebtSchedule(
   interestRate: number, 
   amortizationSchedule: number
 ): DebtScheduleEntry[] {
-  // Implementation here
-  return Array.from({ length: amortizationSchedule }, (_, i) => ({
-    year: i + 1,
-    principal: currentDebt / amortizationSchedule,
-    interest: currentDebt * (interestRate / 100)
-  }));
+  const yearlyPrincipalPayment = currentDebt / amortizationSchedule;
+  let remainingDebt = currentDebt;
+  
+  return Array.from({ length: amortizationSchedule }, (_, i) => {
+    const interest = remainingDebt * (interestRate / 100);
+    const principal = yearlyPrincipalPayment;
+    remainingDebt -= principal;
+    
+    return {
+      year: i + 1,
+      principal,
+      interest
+    };
+  });
 }
 
 export function calculateIRR(cashFlows: number[]): number {
@@ -127,4 +150,4 @@ export function calculatePaybackPeriod(cashFlows: number[]): number {
   }
 
   return cashFlows.length; // Return total period if payback not achieved
-} 
+}
